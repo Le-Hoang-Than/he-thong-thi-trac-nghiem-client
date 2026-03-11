@@ -45,6 +45,8 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+<div style="position: fixed; bottom: 10px; right: 10px; background: #ffeb3b; color: #000; padding: 5px 10px; font-weight: bold; border-radius: 5px; z-index: 9999; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+    Base API: http://127.0.0.1:8000/api
+</div>
 </body>
 </html>
