@@ -7,21 +7,23 @@ use Illuminate\Support\Facades\Http;
 
 class UserController extends Controller
 {
-    protected $api = 'http://127.0.0.1:8000/api';
    public function index()
-{
-    $response = Http::get('http://127.0.0.1:8000/api/users'); 
+    {
+      
+        $response = Http::withoutVerifying()->get(env('BASE_API') . '/test-users');
+        
+        $users = $response->json() ?? [];
 
-    $users = $response->json();
-    return view('users', compact('users'));
-}
+        return view('users', compact('users'));
+    }
 
-   public function store(Request $request)
-{
-    Http::post('http://127.0.0.1:8000/api/users', [
-        'name' => $request->name
-    ]);
+    public function store(Request $request)
+    {
+        
+        Http::withoutVerifying()->post(env('BASE_API') . '/users', [
+            'name' => $request->name
+        ]);
 
-    return redirect('/');
-}
+        return redirect('/');
+    }
 }
