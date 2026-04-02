@@ -119,9 +119,69 @@
         .back-link a:hover {
             color: #764ba2;
         }
+
+        #timerContainer {
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 100;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        #timerLabel {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        #timer {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        #timer.warning {
+            color: #ffeb3b;
+            animation: pulse 1s infinite;
+        }
+
+        #timer.danger {
+            color: #ff6b6b;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            #timerContainer {
+                top: 80px;
+                right: 15px;
+                padding: 15px 20px;
+                min-width: 130px;
+            }
+
+            #timer {
+                font-size: 28px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Timer Display -->
+    <div id="timerContainer">
+        <div id="timerLabel">Thời gian còn lại</div>
+        <div id="timer">45:00</div>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
@@ -159,8 +219,7 @@
                             <p class="mb-0">Tổng số câu: {{ $exam['total'] ?? 40 }} | Thời gian: {{ $exam['duration'] ?? 45 }} phút</p>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 5px;">Thời gian còn lại:</div>
-                            <div style="font-size: 32px; font-weight: bold; color: white;" id="timer">{{ $exam['duration'] ?? 45 }}:00</div>
+                            <!-- Timer will be moved to fixed position by CSS -->
                         </div>
                     </div>
                 </div>
@@ -296,7 +355,7 @@
             .then(result => {
                 console.log('Save answer response:', result);
                 if (result.body.status === 'success') {
-                    showToast('Lưu câu trả lời thành công', 'success');
+                    // Silently save without showing toast
                 } else {
                     showToast('Lỗi lưu: ' + (result.body.message || 'Không xác định'), 'warning');
                     console.error('Save answer failed:', result.body);
@@ -314,6 +373,11 @@
             const timerElement = document.getElementById('timer');
             const examForm = document.getElementById('examForm');
             
+            // Set initial timer value
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            timerElement.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+            
             // Add event listeners to radio buttons for auto-save
             document.querySelectorAll('input[type="radio"]').forEach(radio => {
                 radio.addEventListener('change', function() {
@@ -329,9 +393,16 @@
                 const seconds = totalSeconds % 60;
                 timerElement.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
                 
-                // Change color when less than 5 minutes
-                if (totalSeconds < 300) {
-                    timerElement.style.color = '#ff6b6b';
+                // Change color when less than 5 minutes (warning)
+                if (totalSeconds < 300 && totalSeconds >= 60) {
+                    timerElement.classList.remove('danger');
+                    timerElement.classList.add('warning');
+                }
+                
+                // Change color when less than 1 minute (danger)
+                if (totalSeconds < 60) {
+                    timerElement.classList.remove('warning');
+                    timerElement.classList.add('danger');
                 }
                 
                 // Auto submit when time is up
