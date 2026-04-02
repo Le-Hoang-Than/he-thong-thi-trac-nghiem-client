@@ -228,20 +228,6 @@
             margin-bottom: 10px;
         }
 
-        .filter-section {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .filter-section h5 {
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
         @media (max-width: 768px) {
             .sidebar {
                 min-height: auto;
@@ -340,33 +326,6 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     @endif
-
-                    <!-- Filter Section -->
-                    <div class="filter-section">
-                        <h5>
-                            <i class="fas fa-filter me-2" style="color: #667eea;"></i>Bộ lọc
-                        </h5>
-                        <div class="row">
-                            <div class="col-md-3">
-                                <label for="filterStatus" class="form-label">Trạng thái</label>
-                                <select id="filterStatus" class="form-select">
-                                    <option value="">Tất cả</option>
-                                    <option value="not-started">Chưa bắt đầu</option>
-                                    <option value="in-progress">Đang làm</option>
-                                    <option value="completed">Đã hoàn thành</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="filterDifficulty" class="form-label">Độ khó</label>
-                                <select id="filterDifficulty" class="form-select">
-                                    <option value="">Tất cả</option>
-                                    <option value="easy">Dễ</option>
-                                    <option value="medium">Trung bình</option>
-                                    <option value="hard">Khó</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Exams List -->
                     @if(count($exams) > 0)

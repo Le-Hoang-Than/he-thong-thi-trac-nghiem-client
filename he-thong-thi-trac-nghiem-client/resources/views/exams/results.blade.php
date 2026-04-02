@@ -250,33 +250,6 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
             color: white;
         }
-
-        .filter-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            color: #666;
-        }
-
-        .filter-btn.active {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-        }
-
-        .filter-btn:hover {
-            border-color: #667eea;
-        }
     </style>
 </head>
 <body>
@@ -356,13 +329,6 @@
                     <!-- Results -->
                     @if (count($allResults) > 0)
 
-                        <!-- Filter Section -->
-                        <div class="filter-section">
-                            <button class="filter-btn active" onclick="filterResults('all', event)">Tất cả</button>
-                            <button class="filter-btn" onclick="filterResults('Closed', event)">Đã nộp</button>
-                            <button class="filter-btn" onclick="filterResults('Open', event)">Đang làm</button>
-                        </div>
-
                         <!-- Results Cards -->
                         <div id="resultsContainer">
                             @foreach ($allResults as $result)
@@ -389,7 +355,7 @@
                                     
                                     $quizName = $result['quiz']['quiz_name'] ?? ($result['quiz_name'] ?? 'Bài thi');
                                 @endphp
-                                <div class="result-card result-item" data-status="{{ $result['result_status'] ?? 'Open' }}">
+                                <div class="result-card result-item">
                                     <div class="result-card-header">
                                         <div>
                                             <div class="result-card-title">
@@ -504,29 +470,5 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function filterResults(status, event) {
-            if (event) {
-                event.preventDefault();
-            }
-            
-            const items = document.querySelectorAll('.result-item');
-            
-            // Update active button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Filter items
-            items.forEach(item => {
-                if (status === 'all' || item.dataset.status === status) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-    </script>
 </body>
 </html>

@@ -176,7 +176,7 @@
                                 <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
                             </a>
                         @else
-                        <form method="POST" action="/exams/{{ $exam['rid'] }}/submit" id="examForm">
+                        <form method="POST" action="/exams/{{ $exam['rid'] }}/submit" id="examForm" data-rid="{{ $exam['rid'] ?? 0 }}" data-duration="{{ $exam['duration'] ?? 45 }}">
                             @csrf
                             <input type="hidden" name="is_timeout" value="0" id="is_timeout_field">
                             @foreach($exam['questions'] as $index => $question)
@@ -230,7 +230,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        const rid = {{ isset($exam['rid']) && !empty($exam['rid']) ? $exam['rid'] : 'null' }};
+        // Get exam data from form attributes
+        const examForm = document.getElementById('examForm');
+        const rid = parseInt(examForm?.dataset.rid || '0', 10) || 0;
+        const durationMinutes = parseInt(examForm?.dataset.duration || '45', 10) || 45;
         
         // Validate rid is present and valid
         if (!rid || rid === null || rid === 0) {
@@ -307,7 +310,6 @@
         
         // Countdown Timer
         document.addEventListener('DOMContentLoaded', function() {
-            const durationMinutes = {{ $exam['duration'] ?? 45 }};
             let totalSeconds = durationMinutes * 60;
             const timerElement = document.getElementById('timer');
             const examForm = document.getElementById('examForm');
