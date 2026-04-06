@@ -10,17 +10,30 @@ class SavsoftResult extends Model
     protected $primaryKey = 'rid';       // Khai báo khóa chính (vì Savsoft dùng rid chứ không phải id)
     public $timestamps = false;          // Savsoft dùng start_time (int) chứ không dùng created_at
 
-    // Khai báo các trường có thể gán giá trị (fillable)
-    protected $attributes = [ 
+    // Khai báo các trường có thể gán giá trị (mass-assignable)
+    protected $fillable = [
+        'end_time',
+        'score_obtained',
+        'percentage_obtained', // Tên đúng trong ảnh
+        'categories',
+        'category_range',
+        'individual_time',     // Cột số 10 trong ảnh
+        'attempted_ip',        // Cột số 14 (Thay cho 'ips')
+        'score_individual',    // Cột số 15
+        'photo',
+    ];
+
+    // Giá trị mặc định cho các cột
+    protected $attributes = [
         'end_time' => 0,
-    'score_obtained' => 0,
-    'percentage_obtained' => 0, // Tên đúng trong ảnh
-    'categories' => '',
-    'category_range' => '',
-    'individual_time' => '',    // Cột số 10 trong ảnh
-    'attempted_ip' => '',      // Cột số 14 (Thay cho 'ips')
-    'score_individual' => '',   // Cột số 15
-    'photo' => '',
+        'score_obtained' => 0,
+        'percentage_obtained' => 0,
+        'categories' => '',
+        'category_range' => '',
+        'individual_time' => '',
+        'attempted_ip' => '',
+        'score_individual' => '',
+        'photo' => '',
     ];
     // Ràng buộc với sinh viên
     public function user() {
