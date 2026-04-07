@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Http;
 
 class AuthController extends Controller
 {
-    // API backend URL
-    protected $apiUrl = 'http://127.0.0.1:8000';
-
     public function showLoginForm()
     {
         return view('auth.login');
@@ -27,7 +24,10 @@ class AuthController extends Controller
         ]);
 
         try {
-            $response = Http::post($this->apiUrl . '/api/login', $credentials);
+            // SỬA LỖI Ở ĐÂY: Dùng env('BASE_API') thay vì $this->apiUrl
+            // (Vì BASE_API trên Render của bạn đã là .../api rồi, nên ở đây chỉ nối thêm '/login')
+            $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
+            $response = Http::post($apiUrl . '/login', $credentials);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -43,7 +43,8 @@ class AuthController extends Controller
                 return back()->withErrors(['studentid' => $errorMsg])->withInput();
             }
         } catch (\Exception $e) {
-            return back()->withErrors(['studentid' => 'Lỗi kết nối đến server. Vui lòng thử lại sau.'])->withInput();
+            // SỬA LỖI Ở ĐÂY: In ra nguyên nhân sập thật sự để dễ sửa
+            return back()->withErrors(['studentid' => 'Lỗi thực sự là: ' . $e->getMessage()])->withInput();
         }
     }
 

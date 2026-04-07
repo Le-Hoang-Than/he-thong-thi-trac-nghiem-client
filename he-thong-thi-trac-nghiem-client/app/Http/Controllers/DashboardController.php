@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
 {
-    protected $apiUrl = 'http://127.0.0.1:8000';
-
     public function index()
     {
         // Check authentication
