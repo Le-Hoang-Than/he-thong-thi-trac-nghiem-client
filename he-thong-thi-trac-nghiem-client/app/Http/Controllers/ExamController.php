@@ -8,7 +8,14 @@ use Illuminate\Support\Facades\Log;
 
 class ExamController extends Controller
 {
-    protected $apiUrl = 'http://127.0.0.1:8000';
+    protected $apiUrl;
+
+    public function __construct()
+    {
+        // Vá lỗi: Khai báo biến apiUrl để không bị sập ngầm
+        // Lấy link từ .env, nếu không có thì dùng link cứng của Service
+        $this->apiUrl = rtrim(env('BASE_API_URL', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com'), '/');
+    }
 
     public function index()
     {
@@ -282,7 +289,9 @@ class ExamController extends Controller
                 // Ensure rid is present - it's critical for saving answers
                 if (!isset($data['rid']) || empty($data['rid'])) {
                     Log::error('API did not return rid: ' . json_encode($data));
-                    return redirect('/exams')->with('error', 'Lỗi: Không thể khởi tạo bài thi. Vui lòng thử lại.');
+                    
+                    // VÁ LỖI: In thẳng sự thật ra màn hình để bắt bệnh cục Service
+                    return redirect('/exams')->with('error', 'Service lỗi: Trả về thiếu mã lượt thi (rid). Dữ liệu Service trả về là: ' . json_encode($data));
                 }
                 
                 $exam = [
@@ -574,4 +583,3 @@ class ExamController extends Controller
         }
     }
 }
-
