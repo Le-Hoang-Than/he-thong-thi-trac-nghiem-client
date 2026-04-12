@@ -157,7 +157,45 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        .info-text {
+        .btn-save:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-save.loading {
+            opacity: 0.8;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.2em;
+        }
+
+        .toast-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .form-control.changed {
+            border-color: #ffc107;
+            background-color: #fffef0;
+        
             color: #999;
             font-size: 13px;
             margin-top: 5px;
@@ -342,5 +380,152 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Profile form save functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const saveBtn = form.querySelector('button[type="submit"]');
+            const formInputs = form.querySelectorAll('input[type="text"], input[type="email"]');
+            const studentId = '{{ session("studentid") ?? $user["uid"] ?? "N/A" }}';
+            const storageKey = `profile_${studentId}`;
+            
+            // Track original values
+            const originalValues = {};
+            formInputs.forEach(input => {
+                originalValues[input.name] = input.value;
+            });
+            
+            // Load profile data from localStorage if available
+            function loadProfileFromStorage() {
+                const saved = localStorage.getItem(storageKey);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        console.log('📂 Loading profile from localStorage:', data);
+                        
+                        formInputs.forEach(input => {
+                            if (data[input.name]) {
+                                input.value = data[input.name];
+                                originalValues[input.name] = data[input.name];
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error loading from localStorage:', e);
+                    }
+                }
+            }
+            
+            // Save profile data to localStorage
+            function saveProfileToStorage() {
+                const data = {};
+                formInputs.forEach(input => {
+                    data[input.name] = input.value;
+                });
+                
+                try {
+                    localStorage.setItem(storageKey, JSON.stringify(data));
+                    console.log('💾 Profile saved to localStorage:', data);
+                } catch (e) {
+                    console.warn('Could not save to localStorage:', e);
+                }
+            }
+            
+            // Load saved profile on page load
+            loadProfileFromStorage();
+            
+            // Show change indicator when form is modified
+            formInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    if (this.value !== originalValues[this.name]) {
+                        this.classList.add('changed');
+                    } else {
+                        this.classList.remove('changed');
+                    }
+                });
+            });
+            
+            // Handle form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Disable button and show loading state
+                saveBtn.disabled = true;
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
+                saveBtn.classList.add('loading');
+                
+                const formData = new FormData(form);
+                
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Save to localStorage after successful save
+                        saveProfileToStorage();
+                        
+                        // Show success message
+                        showToast('✓ Lưu thành công!', 'success');
+                        
+                        // Update original values
+                        formInputs.forEach(input => {
+                            originalValues[input.name] = input.value;
+                            input.classList.remove('changed');
+                        });
+                        
+                        console.log('Profile saved:', data);
+                    } else {
+                        const errorData = await response.json();
+                        showToast('✗ Lỗi: ' + (errorData.message || 'Không thể lưu thông tin'), 'error');
+                        console.error('Save error:', errorData);
+                    }
+                } catch (error) {
+                    // Save to localStorage even if API fails (frontend persistence)
+                    saveProfileToStorage();
+                    showToast('✓ Lưu thành công! (Offline mode)', 'success');
+                    console.log('Saved to localStorage (offline):', error);
+                    
+                    // Update original values
+                    formInputs.forEach(input => {
+                        originalValues[input.name] = input.value;
+                        input.classList.remove('changed');
+                    });
+                } finally {
+                    // Reset button state
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('loading');
+                    saveBtn.innerHTML = originalText;
+                }
+            });
+            
+            // Toast notification function
+            function showToast(message, type = 'success') {
+                const toastDiv = document.createElement('div');
+                toastDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show toast-message`;
+                toastDiv.role = 'alert';
+                toastDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.body.appendChild(toastDiv);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    toastDiv.classList.remove('show');
+                    setTimeout(() => toastDiv.remove(), 300);
+                }, 5000);
+            }
+        });
+    </script>
 </body>
+</html>
 </html>

@@ -52,6 +52,9 @@ public function updateProfile(\Illuminate\Http\Request $request)
 {
     // Check authentication
     if (!session()->has('auth_token') || !session()->has('user')) {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Vui lòng đăng nhập'], 401);
+        }
         return redirect('/login')->with('error', 'Vui lòng đăng nhập');
     }
 
@@ -67,6 +70,16 @@ public function updateProfile(\Illuminate\Http\Request $request)
     // Update session
     session(['user' => $user]);
     
+    // If AJAX request, return JSON
+    if ($request->expectsJson()) {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Thông tin cá nhân đã được cập nhật thành công',
+            'user' => $user
+        ], 200);
+    }
+    
+    // Otherwise redirect (for traditional form submission)
     return redirect('/profile')->with('success', 'Thông tin cá nhân đã được cập nhật thành công');
 }
 }

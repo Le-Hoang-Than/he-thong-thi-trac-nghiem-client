@@ -42,11 +42,81 @@
         }
 
         .exam-body {
-            padding: 40px 30px;
+            padding: 30px;
+        }
+
+        .exam-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .question-section {
+            flex: 1;
         }
 
         .question-container {
             margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .question-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .nav-button {
+            background: #667eea;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .question-counter {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
         }
 
         .question-number {
@@ -67,6 +137,7 @@
             font-weight: 600;
             color: #333;
             margin-bottom: 15px;
+            line-height: 1.6;
         }
 
         .option {
@@ -76,6 +147,7 @@
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
+            background: white;
         }
 
         .option:hover {
@@ -85,6 +157,108 @@
 
         .option input[type="radio"] {
             margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .question-grid {
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            position: sticky;
+            top: 100px;
+        }
+
+        .grid-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .question-grid-items {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .grid-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: #666;
+        }
+
+        .grid-item:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+
+        .grid-item.answered {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .grid-item.unanswered {
+            background: white;
+            border: 2px solid #ddd;
+            color: #999;
+        }
+
+        .grid-item.error {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .grid-item.current {
+            border: 3px solid #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .grid-legend {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .legend-color.answered {
+            background: #28a745;
+        }
+
+        .legend-color.unanswered {
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .legend-color.error {
+            background: #dc3545;
         }
 
         .btn-submit {
@@ -161,6 +335,21 @@
             50% { opacity: 0.7; }
         }
 
+        @media (max-width: 992px) {
+            .exam-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .question-grid {
+                position: static;
+                margin-top: 30px;
+            }
+
+            .question-grid-items {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
             #timerContainer {
                 top: 80px;
@@ -171,6 +360,26 @@
 
             #timer {
                 font-size: 28px;
+            }
+
+            .exam-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .question-grid {
+                position: static;
+            }
+
+            .question-grid-items {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .exam-body {
+                padding: 20px;
+            }
+
+            .question-container {
+                padding: 15px;
             }
         }
     </style>
@@ -235,40 +444,80 @@
                                 <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
                             </a>
                         @else
-                        <form method="POST" action="/exams/{{ $exam['rid'] }}/submit" id="examForm" data-rid="{{ $exam['rid'] ?? 0 }}" data-duration="{{ $exam['duration'] ?? 45 }}">
+                        <form method="POST" action="/exams/{{ $exam['rid'] }}/submit" id="examForm" data-rid="{{ $exam['rid'] ?? 0 }}" data-duration="{{ $exam['duration'] ?? 45 }}" data-time-left="{{ $exam['time_left'] ?? null }}">
                             @csrf
                             <input type="hidden" name="is_timeout" value="0" id="is_timeout_field">
-                            @foreach($exam['questions'] as $index => $question)
-                                <div class="question-container">
-                                    <div class="question-number">{{ $index + 1 }}</div>
-                                    <div class="question-text">
-                                        @php
-                                            // Get question text (HTML content)
-                                            $questionText = $question['question'] ?? null;
-                                            if ($questionText) {
-                                                // Strip HTML tags and decode entities
-                                                $questionText = html_entity_decode(strip_tags($questionText));
-                                                // Clean up whitespace
-                                                $questionText = trim(preg_replace('/\s+/', ' ', $questionText));
-                                            }
-                                        @endphp
-                                        {{ $questionText ?: '(Câu hỏi)' }}
-                                    </div>
-                                    
-                                    @if(isset($question['options']) && is_array($question['options']) && count($question['options']) > 0)
-                                        @foreach($question['options'] as $optIndex => $option)
-                                            <label class="option">
-                                                <input type="radio" name="question_{{ $question['qid'] ?? $index }}" 
-                                                       value="{{ $option['oid'] ?? $optIndex }}" 
-                                                       required>
-                                                {{ $option['q_option'] ?? 'Lựa chọn' }}
-                                            </label>
-                                        @endforeach
-                                    @endif
-                                </div>
-                            @endforeach
                             
-                            <div class="text-center">
+                            <div class="exam-layout">
+                                <!-- Left: Questions -->
+                                <div class="question-section">
+                                    @foreach($exam['questions'] as $index => $question)
+                                        <div class="question-container {{ $index === 0 ? 'active' : '' }}" data-question-num="{{ $index + 1 }}" data-question-id="{{ $question['qid'] ?? $index }}">
+                                            <div class="question-number">{{ $index + 1 }}</div>
+                                            <div class="question-text">
+                                                @php
+                                                    $questionText = $question['question'] ?? null;
+                                                    if ($questionText) {
+                                                        $questionText = html_entity_decode(strip_tags($questionText));
+                                                        $questionText = trim(preg_replace('/\s+/', ' ', $questionText));
+                                                    }
+                                                @endphp
+                                                {{ $questionText ?: '(Câu hỏi)' }}
+                                            </div>
+                                            
+                                            @if(isset($question['options']) && is_array($question['options']) && count($question['options']) > 0)
+                                                @foreach($question['options'] as $optIndex => $option)
+                                                    <label class="option">
+                                                        <input type="radio" name="question_{{ $question['qid'] ?? $index }}" 
+                                                               value="{{ $option['oid'] ?? $optIndex }}">
+                                                        {{ $option['q_option'] ?? 'Lựa chọn' }}
+                                                    </label>
+                                                @endforeach
+                                            @endif
+                                        </div>
+                                    @endforeach
+
+                                    <!-- Navigation Buttons -->
+                                    <div class="question-navigation">
+                                        <button type="button" class="nav-button" id="prevBtn" onclick="previousQuestion()">
+                                            <i class="fas fa-chevron-left me-2"></i>Câu trước
+                                        </button>
+                                        <span class="question-counter"><span id="currentQuestion">1</span>/<span id="totalQuestions">{{ count($exam['questions'] ?? []) }}</span></span>
+                                        <button type="button" class="nav-button" id="nextBtn" onclick="nextQuestion()">
+                                            Câu sau<i class="fas fa-chevron-right ms-2"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Question Grid -->
+                                <div class="question-grid">
+                                    <div class="grid-title">Danh sách câu hỏi</div>
+                                    <div class="question-grid-items">
+                                        @foreach($exam['questions'] as $index => $question)
+                                            <div class="grid-item unanswered" data-question-num="{{ $index + 1 }}" data-question-id="{{ $question['qid'] ?? $index }}">
+                                                {{ $index + 1 }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="grid-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-color answered"></div>
+                                            <span>Đã trả lời</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color unanswered"></div>
+                                            <span>Chưa trả lời</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color error"></div>
+                                            <span>Vấn đề(Lỗi)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center" style="margin-top: 40px;">
                                 <button type="submit" class="btn-submit">
                                     <i class="fas fa-check me-2"></i>Nộp bài thi
                                 </button>
@@ -293,6 +542,19 @@
         const examForm = document.getElementById('examForm');
         const rid = parseInt(examForm?.dataset.rid || '0', 10) || 0;
         const durationMinutes = parseInt(examForm?.dataset.duration || '45', 10) || 45;
+        const timeLeftSeconds = examForm?.dataset.timeLeft ? parseInt(examForm.dataset.timeLeft, 10) : null;
+        
+        // Use time_left from API if available (for resumed exams), otherwise use duration
+        let initialSeconds = timeLeftSeconds !== null && timeLeftSeconds > 0 
+            ? timeLeftSeconds 
+            : durationMinutes * 60;
+        
+        console.log('Timer initialized:', {
+            rid: rid,
+            durationMinutes: durationMinutes,
+            timeLeftFromAPI: timeLeftSeconds,
+            initialSeconds: initialSeconds
+        });
         
         // Validate rid is present and valid
         if (!rid || rid === null || rid === 0) {
@@ -301,6 +563,9 @@
         }
         
         console.log('Exam started with rid:', rid);
+        
+        // Track answered questions
+        const answeredQuestions = new Set();
         
         // Show toast notification
         function showToast(message, type = 'success') {
@@ -323,6 +588,98 @@
             }, 3000);
         }
         
+        // Question navigation
+        let currentQuestionIndex = 0;
+        const totalQuestions = document.querySelectorAll('.question-container').length;
+        
+        function showQuestion(index) {
+            // Hide all questions
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            // Show selected question
+            const containers = document.querySelectorAll('.question-container');
+            if (containers[index]) {
+                containers[index].classList.add('active');
+                currentQuestionIndex = index;
+                
+                // Update counter
+                document.getElementById('currentQuestion').textContent = index + 1;
+                
+                // Update grid highlight
+                document.querySelectorAll('.grid-item').forEach(item => {
+                    item.classList.remove('current');
+                });
+                const gridItems = document.querySelectorAll('.grid-item');
+                if (gridItems[index]) {
+                    gridItems[index].classList.add('current');
+                }
+            }
+            
+            // Update button states
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn) prevBtn.disabled = currentQuestionIndex === 0;
+            if (nextBtn) nextBtn.disabled = currentQuestionIndex === totalQuestions - 1;
+        }
+        
+        function nextQuestion() {
+            if (currentQuestionIndex < totalQuestions - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+        
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+        
+        // Initialize question grid click handlers
+        function initializeGridClickHandlers() {
+            document.querySelectorAll('.grid-item').forEach(gridItem => {
+                gridItem.addEventListener('click', function() {
+                    const questionNum = parseInt(this.dataset.questionNum, 10);
+                    if (questionNum > 0) {
+                        showQuestion(questionNum - 1);
+                    }
+                });
+            });
+        }
+        
+        function updateGridItemStatus(questionId, isAnswered) {
+            // Specifically search for grid-item elements with matching data-question-id
+            const gridItem = document.querySelector(`.grid-item[data-question-id="${questionId}"]`);
+            
+            if (gridItem) {
+                if (isAnswered) {
+                    gridItem.classList.remove('unanswered', 'error');
+                    gridItem.classList.add('answered');
+                    answeredQuestions.add(questionId);
+                    console.log(`✓ Grid item marked ANSWERED for question ${questionId}`, gridItem);
+                } else {
+                    gridItem.classList.remove('answered', 'error');
+                    gridItem.classList.add('unanswered');
+                    answeredQuestions.delete(questionId);
+                    console.log(`○ Grid item marked UNANSWERED for question ${questionId}`, gridItem);
+                }
+            } else {
+                console.warn(`✗ Grid item NOT found for question ${questionId}`);
+                // Fallback: try document.querySelectorAll in case the first method fails
+                const allGridItems = document.querySelectorAll('.grid-item');
+                console.log(`Available grid items: ${allGridItems.length}, looking for qid: ${questionId}`);
+                allGridItems.forEach((item, idx) => {
+                    console.log(`  Grid item ${idx}: data-question-id="${item.dataset.questionId}"`);
+                });
+            }
+        }
+        
         // Save answer via local endpoint
         function saveAnswer(questionId, optionId) {
             if (!rid || rid === null) {
@@ -330,6 +687,10 @@
                 showToast('Lỗi: ID bài thi không hợp lệ', 'warning');
                 return;
             }
+            
+            // Immediately update UI (optimistic update)
+            updateGridItemStatus(questionId, true);
+            console.log(`📝 Question ${questionId} selected, updating grid item immediately`);
             
             const data = {
                 qid: questionId,
@@ -355,7 +716,7 @@
             .then(result => {
                 console.log('Save answer response:', result);
                 if (result.body.status === 'success') {
-                    // Silently save without showing toast
+                    console.log(`✅ Answer saved successfully for question ${questionId}`);
                 } else {
                     showToast('Lỗi lưu: ' + (result.body.message || 'Không xác định'), 'warning');
                     console.error('Save answer failed:', result.body);
@@ -369,9 +730,10 @@
         
         // Countdown Timer
         document.addEventListener('DOMContentLoaded', function() {
-            let totalSeconds = durationMinutes * 60;
+            let totalSeconds = initialSeconds;
             const timerElement = document.getElementById('timer');
             const examForm = document.getElementById('examForm');
+            const questionSection = document.querySelector('.question-section');
             
             // Set initial timer value
             const minutes = Math.floor(totalSeconds / 60);
@@ -385,6 +747,17 @@
                     const optionId = this.value;
                     saveAnswer(questionId, optionId);
                 });
+            });
+            
+            // Initialize question navigation
+            initializeGridClickHandlers();
+            updateNavigationButtons();
+            showQuestion(0);
+            
+            // Load existing answers from form and update grid status
+            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                const questionId = radio.name.replace('question_', '');
+                updateGridItemStatus(questionId, true);
             });
             
             // Update timer every second
