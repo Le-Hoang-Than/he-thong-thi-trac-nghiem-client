@@ -47,7 +47,7 @@ class ExamController extends Controller
                             'quiz_name' => $quizData['Tên đề thi:'] ?? 'Bài thi',
                             'description' => $quizData['Tên đề thi:'] ?? 'Bài thi mặc định',
                             'noq' => $quizData['Số lượng câu hỏi:'] ?? 40,
-                            'duration' => $quizData['Thời lượng(phút)'] ?? 45,
+                            'duration' => $quizData['Thời lượng(phút)'] ?? 35,
                             'pass_percentage' => 60
                         ]
                     ];
@@ -65,7 +65,7 @@ class ExamController extends Controller
                     'quiz_name' => 'Bài thi mặc định',
                     'description' => 'Bài thi mặc định (quid = 61)',
                     'noq' => 40,
-                    'duration' => 45,
+                    'duration' => 35,
                     'pass_percentage' => 60
                 ]
             ];
@@ -264,7 +264,7 @@ class ExamController extends Controller
 
         Log::info('Final results count', ['total' => count($allResults), 'from_api' => count(array_filter($allResults, fn($r) => $r['source'] === 'api_history'))]);
 
-        return view('exams.results', compact('allResults', 'user'));
+        return view('exams.exam-history-list', compact('allResults', 'user'));
     }
 
     public function show($id)
@@ -300,7 +300,8 @@ class ExamController extends Controller
                     'total' => $data['total'] ?? 40,
                     'questions' => $data['data'] ?? [],
                     'quiz_name' => $data['quiz_name'] ?? 'Bài thi',
-                    'duration' => $data['duration'] ?? 45,
+                    'duration' => $data['duration'] ?? 35,
+                    'time_left' => isset($data['time_left']) ? (int)$data['time_left'] : null,  // For resumed exams
                     'user' => $user
                 ];
             } else {
@@ -330,7 +331,7 @@ class ExamController extends Controller
             'quid' => $id,
             'quiz_name' => 'Bài thi (quid=' . $id . ')',
             'noq' => 40,
-            'duration' => 45
+            'duration' => 35
         ];
 
         // Status: 'not_started', 'in_progress', 'completed'
@@ -441,7 +442,7 @@ class ExamController extends Controller
             $result['error'] = 'Lỗi kết nối: ' . $e->getMessage();
         }
 
-        return view('exams.result', compact('result', 'user'));
+        return view('exams.exam-result-detail', compact('result', 'user'));
     }
 
     public function submit($rid, \Illuminate\Http\Request $request)
