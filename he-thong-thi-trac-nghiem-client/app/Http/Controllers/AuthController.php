@@ -13,40 +13,30 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'studentid' => 'required|string',
-            'password' => 'required|string|min:6',
-        ], [
-            'studentid.required' => 'Mã sinh viên không được để trống',
-            'password.required' => 'Mật khẩu không được để trống',
-            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
-        ]);
+{
+    $request->validate([
+        'studentid' => 'required',
+        'password' => 'required'
+    ]);
 
-        try {
-            // SỬA LỖI Ở ĐÂY: Dùng env('BASE_API') thay vì $this->apiUrl
-            // (Vì BASE_API trên Render của bạn đã là .../api rồi, nên ở đây chỉ nối thêm '/login')
-            $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
-            $response = Http::post($apiUrl . '/login', $credentials);
+    $studentId = strtoupper($request->studentid);
+    $user = User::where('studentid', $studentId)->first();
 
-            if ($response->successful()) {
-                $data = $response->json();
-                session([
-                    'auth_token' => $data['token'] ?? null,
-                    'user' => $data['user'] ?? null,
-                    'studentid' => $data['user']['studentid'] ?? null,
-                ]);
-                
-                return redirect('/exams')->with('success', 'Đăng nhập thành công!');
-            } else {
-                $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại';
-                return back()->withErrors(['studentid' => $errorMsg])->withInput();
-            }
-        } catch (\Exception $e) {
-            // SỬA LỖI Ở ĐÂY: In ra nguyên nhân sập thật sự để dễ sửa
-            return back()->withErrors(['studentid' => 'Lỗi thực sự là: ' . $e->getMessage()])->withInput();
-        }
+   
+    if(!$user){
+        return back()->withErrors(['studentid' => 'Mã sinh viên không tồn tại'])->withInput();
     }
+
+    if(md5($request->password) != $user->password){
+        return back()->withErrors(['password' => 'Sai mật khẩu'])->withInput();
+    }
+
+    $token = bin2hex(random_bytes(32));
+    $user->web_token = $token;
+    $user->save();
+
+    return redirect()->route('exams')->with('success', 'Đăng nhập thành công'); 
+}
 
     public function logout(Request $request)
     {
