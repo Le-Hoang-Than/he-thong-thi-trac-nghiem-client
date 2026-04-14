@@ -243,10 +243,10 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login') }}" id="loginForm">
-                    @csrf
-
-                    <div class="form-group">
+                <form method="POST" action="/login" id="loginForm">
+    @csrf
+    
+    <div class="form-group">
                         <label for="studentid" class="form-label">
                             <i class="fas fa-id-card me-2" style="color: #667eea;"></i>Mã sinh viên
                         </label>
