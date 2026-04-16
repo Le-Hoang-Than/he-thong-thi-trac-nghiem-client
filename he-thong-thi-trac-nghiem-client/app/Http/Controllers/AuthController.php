@@ -12,7 +12,7 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+public function login(Request $request)
     {
         $credentials = $request->validate([
             'studentid' => 'required|string',
@@ -38,41 +38,20 @@ class AuthController extends Controller
                 return redirect('/exams')->with('success', 'Đăng nhập thành công!');
             } else {
                 
-                // ---- THÊM ĐÚNG 1 DÒNG NÀY VÀO ĐÂY ----
-                dd("DỮ LIỆU TỪ API TRẢ VỀ LÀ:", $response->status(), $response->json());
-                // -------------------------------------
+                // ĐÃ XÓA HÀM dd() Ở ĐÂY
 
                 $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại';
+                
+                // SỬ DỤNG return view() ĐỂ NÉ LỖI SERVER RENDER ĂN MẤT SESSION
                 if (str_contains(strtolower($errorMsg), 'mật khẩu')) {
-                    return back()->withErrors(['password' => $errorMsg])->withInput();
+                    return view('auth.login')->withErrors(['password' => $errorMsg]);
                 } else {
-                    return back()->withErrors(['studentid' => $errorMsg])->withInput();
+                    return view('auth.login')->withErrors(['studentid' => $errorMsg]);
                 }
             }
         } catch (\Exception $e) {
-            return back()->withErrors(['studentid' => 'Lỗi kết nối: ' . $e->getMessage()])->withInput();
+           
+            return view('auth.login')->withErrors(['studentid' => 'Lỗi kết nối: ' . $e->getMessage()]);
         }
-    }
-
-    public function logout(Request $request)
-    {
-        $token = session('auth_token');
-        if ($token) {
-            try {
-               
-                $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
-                Http::withToken($token)->post($apiUrl . '/logout');
-            } catch (\Exception $e) {
-               
-            }
-        }
-
-        session()->flush();
-        return redirect('/login')->with('success', 'Đã đăng xuất thành công');
-    }
-
-    public function isAuthenticated()
-    {
-        return session()->has('auth_token') && session()->has('user');
     }
 }
