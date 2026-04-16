@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-
+use Illuminate\Support\Facades\Validator; 
+use Illuminate\Support\MessageBag;
 class AuthController extends Controller
 {
     // 1. Hiển thị form đăng nhập
@@ -14,10 +15,10 @@ class AuthController extends Controller
     }
 
     // 2. Xử lý khi người dùng bấm nút Đăng nhập
-    public function login(Request $request)
+   public function login(Request $request)
     {
-        // Kiểm tra dữ liệu người dùng nhập vào
-        $credentials = $request->validate([
+        // 1. KIỂM TRA LỖI THỦ CÔNG (Tuyệt đối không dùng validate() để tránh bị ép chuyển trang)
+        $validator = Validator::make($request->all(), [
             'studentid' => 'required|string',
             'password' => 'required|string|min:6',
         ], [
@@ -26,39 +27,45 @@ class AuthController extends Controller
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
         ]);
 
+        // Nếu có lỗi (ví dụ mk ngắn hơn 6 ký tự), trả thẳng về view luôn!
+        if ($validator->fails()) {
+            return view('auth.login')->withErrors($validator);
+        }
+
         try {
-            // Gọi API sang bên Service
+            // 2. GỌI API
             $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
-            $response = Http::post($apiUrl . '/login', $credentials);
+            $response = Http::post($apiUrl . '/login', $request->only(['studentid', 'password']));
 
             // NẾU ĐĂNG NHẬP THÀNH CÔNG
             if ($response->successful()) {
                 $data = $response->json();
-                
-                // Lưu thông tin vào Session của người dùng
                 session([
                     'auth_token' => $data['token'] ?? null,
                     'user' => $data['user'] ?? null,
                     'studentid' => $data['user']['studentid'] ?? null,
                 ]);
-                
-                // Chuyển hướng vào trang bài thi
                 return redirect('/exams')->with('success', 'Đăng nhập thành công!');
             } 
-            // NẾU ĐĂNG NHẬP THẤT BẠI (Sai pass, sai mã SV)
+            // NẾU SAI TÀI KHOẢN / MẬT KHẨU TỪ API
             else {
                 $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại';
+                $errors = new MessageBag(); // Tạo túi đựng lỗi mới
                 
-                // Trả thẳng về view kèm theo lỗi (Né lỗi Render xóa session)
+                // Nhét lỗi vào đúng ô
                 if (str_contains(mb_strtolower($errorMsg, 'UTF-8'), 'mật khẩu')) {
-                    return view('auth.login')->withErrors(['password' => $errorMsg]);
+                    $errors->add('password', $errorMsg);
                 } else {
-                    return view('auth.login')->withErrors(['studentid' => $errorMsg]);
+                    $errors->add('studentid', $errorMsg);
                 }
+
+                // Trả thẳng view kèm túi lỗi
+                return view('auth.login')->withErrors($errors);
             }
         } catch (\Exception $e) {
-            // Bắt lỗi sập mạng hoặc không gọi được API
-            return view('auth.login')->withErrors(['studentid' => 'Lỗi kết nối đến máy chủ: ' . $e->getMessage()]);
+            $errors = new MessageBag();
+            $errors->add('studentid', 'Lỗi kết nối đến máy chủ: ' . $e->getMessage());
+            return view('auth.login')->withErrors($errors);
         }
     }
 
