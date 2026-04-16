@@ -24,8 +24,6 @@ class AuthController extends Controller
         ]);
 
         try {
-            // SỬA LỖI Ở ĐÂY: Dùng env('BASE_API') thay vì $this->apiUrl
-            // (Vì BASE_API trên Render của bạn đã là .../api rồi, nên ở đây chỉ nối thêm '/login')
             $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
             $response = Http::post($apiUrl . '/login', $credentials);
 
@@ -40,23 +38,29 @@ class AuthController extends Controller
                 return redirect('/exams')->with('success', 'Đăng nhập thành công!');
             } else {
                 $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại';
-                return back()->withErrors(['studentid' => $errorMsg])->withInput();
+                
+                // SỬA LỖI Ở ĐÂY: Phân loại thông báo lỗi để hiển thị đúng dưới ô nhập
+                if (str_contains(strtolower($errorMsg), 'mật khẩu')) {
+                    return back()->withErrors(['password' => $errorMsg])->withInput();
+                } else {
+                    return back()->withErrors(['studentid' => $errorMsg])->withInput();
+                }
             }
         } catch (\Exception $e) {
-            // SỬA LỖI Ở ĐÂY: In ra nguyên nhân sập thật sự để dễ sửa
-            return back()->withErrors(['studentid' => 'Lỗi thực sự là: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['studentid' => 'Lỗi kết nối: ' . $e->getMessage()])->withInput();
         }
     }
 
     public function logout(Request $request)
     {
-        // Call backend logout API if token exists
         $token = session('auth_token');
         if ($token) {
             try {
-                Http::withToken($token)->post($this->apiUrl . '/api/logout');
+               
+                $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
+                Http::withToken($token)->post($apiUrl . '/logout');
             } catch (\Exception $e) {
-                // Ignore errors, just logout locally
+               
             }
         }
 
