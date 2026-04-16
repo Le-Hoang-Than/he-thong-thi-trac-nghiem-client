@@ -36,7 +36,7 @@ class AuthController extends Controller
                 ]);
                 
                 return redirect('/exams')->with('success', 'Đăng nhập thành công!');
-            }} else {
+            } else {
                 
                 // ---- THÊM ĐÚNG 1 DÒNG NÀY VÀO ĐÂY ----
                 dd("DỮ LIỆU TỪ API TRẢ VỀ LÀ:", $response->status(), $response->json());
