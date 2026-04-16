@@ -34,3 +34,15 @@ Route::middleware(['web'])->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
     Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
 });
+Route::get('/test-api', function() {
+    $response = \Illuminate\Support\Facades\Http::acceptJson()->post(env('BASE_API') . '/login', [
+        'studentid' => 'DH52201207', 
+        'password' => 'matkhausai123' // Cố tình để sai
+    ]);
+    
+    return dd([
+        "MÃ TRẠNG THÁI" => $response->status(),
+        "JSON" => $response->json(),
+        "BODY" => $response->body()
+    ]);
+});
