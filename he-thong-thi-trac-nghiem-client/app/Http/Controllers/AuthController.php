@@ -36,10 +36,13 @@ class AuthController extends Controller
                 ]);
                 
                 return redirect('/exams')->with('success', 'Đăng nhập thành công!');
-            } else {
-                $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại';
+            }} else {
                 
-                // SỬA LỖI Ở ĐÂY: Phân loại thông báo lỗi để hiển thị đúng dưới ô nhập
+                // ---- THÊM ĐÚNG 1 DÒNG NÀY VÀO ĐÂY ----
+                dd("DỮ LIỆU TỪ API TRẢ VỀ LÀ:", $response->status(), $response->json());
+                // -------------------------------------
+
+                $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại';
                 if (str_contains(strtolower($errorMsg), 'mật khẩu')) {
                     return back()->withErrors(['password' => $errorMsg])->withInput();
                 } else {
