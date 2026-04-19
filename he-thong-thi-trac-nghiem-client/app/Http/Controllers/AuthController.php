@@ -4,84 +4,86 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Validator; 
-use Illuminate\Support\MessageBag;
+
 class AuthController extends Controller
 {
-    // 1. Hiển thị form đăng nhập
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    // 2. Xử lý khi người dùng bấm nút Đăng nhập
-   public function login(Request $request)
-{
-    // 1. Kiểm tra định dạng trước (Local Validation)
-    $request->validate([
-        'studentid' => 'required|string',
-        'password' => 'required|string|min:6',
-    ], [
-        'studentid.required' => 'Mã sinh viên không được để trống',
-        'password.required' => 'Mật khẩu không được để trống',
-        'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
-    ]);
-
-    try {
-        $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
-        $response = Http::post($apiUrl . '/login', [
-            'studentid' => $request->studentid,
-            'password' => $request->password,
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'studentid' => 'required|string',
+            'password' => 'required|string|min:6',
+        ], [
+            'studentid.required' => 'Mã sinh viên không được để trống',
+            'password.required' => 'Mật khẩu không được để trống',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
         ]);
 
-        if ($response->successful()) {
-            $data = $response->json();
-            session([
-                'auth_token' => $data['token'] ?? null,
-                'user' => $data['user'] ?? null,
-                'studentid' => $data['user']['studentid'] ?? null,
-            ]);
-            return redirect('/exams')->with('success', 'Đăng nhập thành công!');
-        } 
+        try {
+            // Đồng nhất dùng BASE_API_URL giống ExamController
+            $baseUrl = rtrim(env('BASE_API_URL', 'http://127.0.0.1:8000'), '/');
+            
+            $response = Http::post($baseUrl . '/api/login', $credentials);
 
-        // 2. XỬ LÝ LỖI TỪ API (Sai mật khẩu, không tồn tại...)
-        $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại (Lỗi ' . $response->status() . ')';
-        
-        // Tạo một túi lỗi thủ công để ép nó hiện lên box đỏ trên cùng
-        return back()->withErrors([
-            'login_error' => $errorMsg, // Lỗi chung
-            'studentid' => $errorMsg,   // Hiện ở ô MSSV
-            'password' => $errorMsg     // Hiện ở ô Mật khẩu
-        ])->withInput();
-
-    } catch (\Exception $e) {
-        return back()->withErrors([
-            'studentid' => 'Không thể kết nối đến máy chủ: ' . $e->getMessage()
-        ])->withInput();
+            if ($response->successful()) {
+                $data = $response->json();
+                session([
+                    'auth_token' => $data['token'] ?? null,
+                    'user' => $data['user'] ?? null,
+                    'studentid' => $data['user']['studentid'] ?? null,
+                ]);
+                
+                return redirect('/exams')->with('success', 'Đăng nhập thành công!');
+            } else {
+                $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại';
+                return back()->withErrors(['studentid' => $errorMsg])->withInput();
+            }
+        } catch (\Exception $e) {
+            // SỬA LỖI Ở ĐÂY: In ra nguyên nhân sập thật sự để dễ sửa
+            return back()->withErrors(['studentid' => 'Lỗi thực sự là: ' . $e->getMessage()])->withInput();
+        }
     }
-}
-    // 3. Xử lý Đăng xuất
+
     public function logout(Request $request)
     {
+        // Call backend logout API if token exists
         $token = session('auth_token');
         if ($token) {
             try {
-                // Gọi API để xóa token
-                $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
-                Http::withToken($token)->post($apiUrl . '/logout');
+                $baseUrl = rtrim(env('BASE_API_URL', 'http://127.0.0.1:8000'), '/');
+                Http::withToken($token)->post($baseUrl . '/api/logout');
             } catch (\Exception $e) {
-                // Bỏ qua nếu có lỗi mạng
+                // Ignore errors, just logout locally
             }
         }
 
-        // Xóa sạch bộ nhớ tạm và quay về trang đăng nhập
         session()->flush();
         return redirect('/login')->with('success', 'Đã đăng xuất thành công');
     }
 
-    // 4. Kiểm tra trạng thái đăng nhập
     public function isAuthenticated()
     {
         return session()->has('auth_token') && session()->has('user');
+    }
+
+    // Hàm gọi thử API test-users
+    public function testUsers()
+    {
+        try {
+            $baseUrl = rtrim(env('BASE_API_URL', 'http://127.0.0.1:8000'), '/');
+            $response = Http::get($baseUrl . '/api/test-users');
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json(['error' => 'Lỗi từ API: ' . $response->status()], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Không thể kết nối tới server local: ' . $e->getMessage()], 500);
+        }
     }
 }
