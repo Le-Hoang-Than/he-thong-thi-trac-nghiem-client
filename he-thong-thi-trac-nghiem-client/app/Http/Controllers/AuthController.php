@@ -17,8 +17,8 @@ class AuthController extends Controller
     // 2. Xử lý khi người dùng bấm nút Đăng nhập
    public function login(Request $request)
 {
-    // 1. Kiểm tra định dạng trước (Local Validation)
-    $request->validate([
+    // 1. Kiểm tra định dạng (Tự bắt lỗi để đảm bảo đưa vào session 'error')
+    $validator = Validator::make($request->all(), [
         'studentid' => 'required|string',
         'password' => 'required|string|min:6',
     ], [
@@ -27,6 +27,13 @@ class AuthController extends Controller
         'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
     ]);
 
+    if ($validator->fails()) {
+        return back()
+            ->with('error', $validator->errors()->first())
+            ->withErrors($validator)
+            ->withInput();
+    }
+
     try {
         $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
         $response = Http::post($apiUrl . '/login', [
@@ -34,8 +41,10 @@ class AuthController extends Controller
             'password' => $request->password,
         ]);
 
-        if ($response->successful()) {
-            $data = $response->json();
+        $data = $response->json();
+
+        // Đảm bảo API trả về 2xx VÀ có token thì mới cho qua
+        if ($response->successful() && !empty($data['token'])) {
             session([
                 'auth_token' => $data['token'] ?? null,
                 'user' => $data['user'] ?? null,
@@ -45,7 +54,12 @@ class AuthController extends Controller
         } 
 
         // 2. XỬ LÝ LỖI TỪ API (Sai mật khẩu, không tồn tại...)
-        $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại (Lỗi ' . $response->status() . ')';
+        $errorMsg = 'Đăng nhập thất bại (Lỗi ' . $response->status() . ')';
+        
+        // Tránh lỗi TypeError nếu API trả về HTML/text khiến json() ra null
+        if (is_array($data) && !empty($data['message'])) {
+            $errorMsg = $data['message'];
+        }
         
         // Tạo một túi lỗi thủ công để ép nó hiện lên box đỏ trên cùng
         return back()->with('error', $errorMsg)->withErrors([
@@ -54,7 +68,7 @@ class AuthController extends Controller
             'password' => $errorMsg     // Hiện ở ô Mật khẩu
         ])->withInput();
 
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) { // Dùng Throwable để bắt tất cả các lỗi chết ngầm
         return back()->with('error', 'Không thể kết nối đến máy chủ: ' . $e->getMessage())->withErrors([
             'studentid' => 'Không thể kết nối đến máy chủ: ' . $e->getMessage()
         ])->withInput();
