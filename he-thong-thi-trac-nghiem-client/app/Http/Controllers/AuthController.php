@@ -48,14 +48,14 @@ class AuthController extends Controller
         $errorMsg = $response->json()['message'] ?? 'Đăng nhập thất bại (Lỗi ' . $response->status() . ')';
         
         // Tạo một túi lỗi thủ công để ép nó hiện lên box đỏ trên cùng
-        return view('auth.login')->withErrors([
+        return back()->withErrors([
             'login_error' => $errorMsg, // Lỗi chung
             'studentid' => $errorMsg,   // Hiện ở ô MSSV
             'password' => $errorMsg     // Hiện ở ô Mật khẩu
         ])->withInput();
 
     } catch (\Exception $e) {
-        return view('auth.login')->withErrors([
+        return back()->withErrors([
             'studentid' => 'Không thể kết nối đến máy chủ: ' . $e->getMessage()
         ])->withInput();
     }
