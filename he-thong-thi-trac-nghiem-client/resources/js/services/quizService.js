@@ -23,3 +23,14 @@ export const fetchQuizDetailById = async (quizId) => {
     throw error;
   }
 };
+
+
+export const fetchTestUsers = async () => {
+  try {
+    const response = await axios.get('https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api/test-users');
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi gọi API test-users:', error);
+    throw error;
+  }
+};
