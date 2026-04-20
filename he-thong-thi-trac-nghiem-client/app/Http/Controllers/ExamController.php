@@ -8,15 +8,6 @@ use Illuminate\Support\Facades\Log;
 
 class ExamController extends Controller
 {
-    protected $apiUrl;
-
-    public function __construct()
-    {
-        // Vá lỗi: Khai báo biến apiUrl để không bị sập ngầm
-        // Lấy link từ .env, nếu không có thì dùng link cứng của Service
-        $this->apiUrl = rtrim(env('BASE_API_URL', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com'), '/');
-    }
-
     public function index()
     {
         // Check authentication
