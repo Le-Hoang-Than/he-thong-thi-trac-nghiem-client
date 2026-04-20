@@ -13,7 +13,7 @@ class UserController extends Controller
         $users = [];
 
         try {
-            $response = Http::get($this->api . '/test-users');
+            $response = Http::get($this->apiUrl . '/api/test-users');
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -29,7 +29,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         try {
-            Http::post($this->api . '/users', [
+            Http::post($this->apiUrl . '/api/users', [
                 'name' => $request->name,
             ]);
         } catch (\Exception $e) {
