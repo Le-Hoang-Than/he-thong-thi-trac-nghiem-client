@@ -35,8 +35,7 @@ class AuthController extends Controller
     }
 
     try {
-        $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
-        $response = Http::post($apiUrl . '/login', [
+        $response = Http::post($this->apiUrl . '/api/login', [
             'studentid' => $request->studentid,
             'password' => $request->password,
         ]);
@@ -81,8 +80,7 @@ class AuthController extends Controller
         if ($token) {
             try {
                 // Gọi API để xóa token
-                $apiUrl = env('BASE_API', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com/api');
-                Http::withToken($token)->post($apiUrl . '/logout');
+                Http::withToken($token)->post($this->apiUrl . '/api/logout');
             } catch (\Exception $e) {
                 // Bỏ qua nếu có lỗi mạng
             }
